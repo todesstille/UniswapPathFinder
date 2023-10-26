@@ -60,5 +60,37 @@ describe("Test ethereum forking", function () {
       console.log(await feed.callStatic.testFindPathOneHop(amountDai, usdt.address, dai.address, false));
     });
 
+    it("weth/usdc", async () => {
+      let amountUsdc = ethers.utils.parseUnits("1000", 6);
+      let amountWeth = ethers.utils.parseUnits("1", 18);
+      console.log(await feed.testV2(amountWeth, weth.address, usdc.address, true));
+      console.log(await feed.testV2(amountUsdc, weth.address, usdc.address, false));
+
+      console.log(await feed.callStatic.testV3(amountWeth, weth.address, usdc.address, 500, true));
+      console.log(await feed.callStatic.testV3(amountUsdc, weth.address, usdc.address, 500, false));
+    });
+
+    it("weth/usdc find path", async () => {
+      let amountUsdc = ethers.utils.parseUnits("1000", 6);
+      let amountWeth = ethers.utils.parseUnits("1", 18);
+      console.log(await feed.callStatic.testFindPathOneHop(amountWeth, weth.address, usdc.address, true));
+      console.log(await feed.callStatic.testFindPathOneHop(amountUsdc, weth.address, usdc.address, false));
+    });
+
+    it("weth/usdc with path tokens", async () => {
+      let amountUsdt = ethers.utils.parseUnits("1000", 6);
+      let amountWeth = ethers.utils.parseUnits("1", 18);
+      console.log(await feed.callStatic.testFindPathOneHop(amountWeth, weth.address, usdt.address, true));
+      console.log(await feed.callStatic.testFindPathOneHop(amountUsdt, weth.address, usdt.address, false));
+
+      await feed.addPathTokens([dai.address, usdc.address]);
+      console.log(await feed.getPathTokens());
+
+      console.log(await feed.callStatic.testFindPathOneHop(amountWeth, weth.address, usdt.address, true));
+      console.log(await feed.callStatic.testFindPathOneHop(amountUsdt, weth.address, usdt.address, false));
+
+    });
+
+
   });
 });
