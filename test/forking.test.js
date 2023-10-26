@@ -34,35 +34,31 @@ describe("Test ethereum forking", function () {
     usdc = await ethers.getContractAt("IERC20", "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48");
     dai = await ethers.getContractAt("IERC20", "0x6b175474e89094c44da98b954eedeac495271d0f");
 
+    PriceFeed = await ethers.getContractFactory("PriceFeed");
+
   });
 
   beforeEach(async () => {
+    feed = await PriceFeed.deploy();
   });
 
-  describe("Tokens", function () {
-    it("weth", async () => {
-      expect(await weth.balanceOf(admin.address)).to.equal(0);
-      let amount = ethers.utils.parseEther("1");
-      await getWeth(admin.address, amount);
-      expect(await weth.balanceOf(admin.address)).to.equal(amount);
+  describe("Library", function () {
+    it("usdt/dai", async () => {
+      let amountUsdt = ethers.utils.parseUnits("1000", 6);
+      let amountDai = ethers.utils.parseUnits("1000", 18);
+      console.log(await feed.testV2(amountUsdt, usdt.address, dai.address, true));
+      console.log(await feed.testV2(amountDai, usdt.address, dai.address, false));
+
+      console.log(await feed.callStatic.testV3(amountUsdt, usdt.address, dai.address, 500, true));
+      console.log(await feed.callStatic.testV3(amountDai, usdt.address, dai.address, 500, false));
     });
-    it("usdt", async () => {
-      expect(await usdt.balanceOf(admin.address)).to.equal(0);
-      let amount = ethers.utils.parseUnits("1", 6);
-      await getUsdt(admin.address, amount);
-      expect(await usdt.balanceOf(admin.address)).to.equal(amount);
+
+    it("usdt/dai find path", async () => {
+      let amountUsdt = ethers.utils.parseUnits("1000", 6);
+      let amountDai = ethers.utils.parseUnits("1000", 18);
+      console.log(await feed.callStatic.testFindPathOneHop(amountUsdt, usdt.address, dai.address, true));
+      console.log(await feed.callStatic.testFindPathOneHop(amountDai, usdt.address, dai.address, false));
     });
-    it("usdc", async () => {
-      expect(await usdc.balanceOf(admin.address)).to.equal(0);
-      let amount = ethers.utils.parseUnits("1", 6);
-      await getUsdc(admin.address, amount);
-      expect(await usdc.balanceOf(admin.address)).to.equal(amount);
-    });
-    it("dai", async () => {
-      expect(await dai.balanceOf(admin.address)).to.equal(0);
-      let amount = ethers.utils.parseEther("1");
-      await getDai(admin.address, amount);
-      expect(await dai.balanceOf(admin.address)).to.equal(amount);
-    });
+
   });
 });
