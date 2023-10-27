@@ -13,6 +13,43 @@ library UniswapPathFinder {
 
     using EnumerableSet for EnumerableSet.AddressSet;
 
+    function getUniswapPathWithPriceOut(
+        EnumerableSet.AddressSet storage pathTokens,
+        address tokenIn,
+        address tokenOut,
+        uint256 amountIn,
+        IPriceFeed.ProvidedPath memory providedPath
+    ) external returns (IPriceFeed.FoundPath memory foundPath) {
+        return
+            _getPathWithPrice(
+                pathTokens,
+                amountIn,
+                tokenIn,
+                tokenOut,
+                true,
+                providedPath
+            );
+    }
+
+    function getUniswapPathWithPriceIn(
+        EnumerableSet.AddressSet storage pathTokens,
+        address tokenIn,
+        address tokenOut,
+        uint256 amountOut,
+        IPriceFeed.ProvidedPath memory providedPath
+    ) external returns (IPriceFeed.FoundPath memory foundPath) {
+        return
+            _getPathWithPrice(
+                pathTokens,
+                amountOut,
+                tokenIn,
+                tokenOut,
+                false,
+                providedPath
+            );
+    }
+
+
     // TODO: Switch provided path memory to calldata
     function _getPathWithPrice(
         EnumerableSet.AddressSet storage pathTokens,
@@ -30,7 +67,7 @@ library UniswapPathFinder {
         path2[0] = tokenIn;
         path2[1] = tokenOut;
 
-        (IPriceFeed.FoundPath memory foundPath2, bool isFoundAtLeastOnePath) = _calculatePath(amount, path2, exactIn);
+        (IPriceFeed.FoundPath memory foundPath2, bool isFoundAtLeastOnePath) = _calculatePathResults(amount, path2, exactIn);
         
         if (isFoundAtLeastOnePath) {
             foundPath = foundPath2;             
@@ -44,22 +81,14 @@ library UniswapPathFinder {
             path3[1] = pathTokens.at(i);
             path3[2] = tokenOut;
 
-            (IPriceFeed.FoundPath memory foundPath3, bool isPathValid) = _calculatePath(amount, path3, exactIn);
+            (IPriceFeed.FoundPath memory foundPath3, bool isPathValid) = _calculatePathResults(amount, path3, exactIn);
 
             if (isPathValid) {
                 if (!isFoundAtLeastOnePath) {
                     isFoundAtLeastOnePath = true;
                     foundPath = foundPath3;
                 } else {
-                    uint256 previousResult = 
-                        exactIn ? 
-                            foundPath.amounts[foundPath.amounts.length - 1] 
-                            : foundPath.amounts[0];
-                    uint256 currentResult = 
-                        exactIn ? 
-                            foundPath3.amounts[foundPath3.amounts.length - 1] 
-                            : foundPath3.amounts[0];
-                    if (exactIn ? previousResult < currentResult : previousResult > currentResult) {
+                    if (_comparePathResults(foundPath, foundPath3, exactIn)) {
                         foundPath = foundPath3;
                     }
                 }
@@ -68,26 +97,35 @@ library UniswapPathFinder {
 
         if (_verifyPredefinedPath(tokenIn, tokenOut, providedPath)) {
             (IPriceFeed.FoundPath memory customPath, bool isPathValid) = 
-                _calculatePredefinedPath(providedPath, amount, exactIn);
+                _calculatePredefinedPathResults(providedPath, amount, exactIn);
             if (isPathValid) {
                 if (!isFoundAtLeastOnePath) {
                     isFoundAtLeastOnePath = true;
                     foundPath = customPath;
                 } else {
-                    uint256 previousResult = 
-                        exactIn ? 
-                            foundPath.amounts[foundPath.amounts.length - 1] 
-                            : foundPath.amounts[0];
-                    uint256 currentResult = 
-                        exactIn ? 
-                            customPath.amounts[customPath.amounts.length - 1] 
-                            : customPath.amounts[0];
-                    if (exactIn ? previousResult < currentResult : previousResult > currentResult) {
+                    if (_comparePathResults(foundPath, customPath, exactIn)) {
                         foundPath = customPath;
                     }
                 }
             }
         }
+    }
+
+    function _comparePathResults(
+        IPriceFeed.FoundPath memory oldPath,
+        IPriceFeed.FoundPath memory newPath,
+        bool exactIn
+    ) internal pure returns (bool) {
+        uint256 oldAmount = 
+            exactIn ? 
+                oldPath.amounts[oldPath.amounts.length - 1] 
+                : oldPath.amounts[0];
+        uint256 newAmount = 
+            exactIn ? 
+                newPath.amounts[newPath.amounts.length - 1] 
+                : newPath.amounts[0];
+        
+        return exactIn ? oldAmount < newAmount : oldAmount > newAmount;
     }
 
     // TODO: Switch provided path memory to calldata
@@ -110,7 +148,7 @@ library UniswapPathFinder {
     }
 
     // TODO: Switch provided path memory to calldata
-    function _calculatePredefinedPath(
+    function _calculatePredefinedPathResults(
         IPriceFeed.ProvidedPath memory providedPath,
         uint256 amount,
         bool exactIn
@@ -153,7 +191,7 @@ library UniswapPathFinder {
         }
     }
 
-    function _calculatePath(
+    function _calculatePathResults(
             uint256 amount, 
             address[] memory path, 
             bool exactIn

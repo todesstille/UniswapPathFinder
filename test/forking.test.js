@@ -129,19 +129,18 @@ describe("Test ethereum forking", function () {
 
     });
 
-    // it("amount 0", async () => {
-    //   console.log(await feed.callStatic.testFindPathOneHop(0, weth.address, usdt.address, false));
-    // });
+    it("amount 0", async () => {
+      console.log(await feed.callStatic.testFindPathOneHop(0, weth.address, usdt.address, false));
+    });
 
-    // it("tokens with no swaps", async () => {
-    //   await feed.addPathTokens([dai.address, usdc.address]);
-    //   console.log(await feed.getPathTokens());
-    //   let MockToken = await ethers.getContractFactory("MockToken");
-    //   let token0 = await MockToken.deploy();
-    //   let token1 = await MockToken.deploy();
-    //   console.log(await feed.callStatic.testFindPathOneHop(1, token0.address, token1.address, false));
-    // });
-
+    it("tokens with no swaps", async () => {
+      await feed.addPathTokens([dai.address, usdc.address]);
+      console.log(await feed.getPathTokens());
+      let MockToken = await ethers.getContractFactory("MockToken");
+      let token0 = await MockToken.deploy();
+      let token1 = await MockToken.deploy();
+      console.log(await feed.callStatic.testFindPathOneHop(1, token0.address, token1.address, false));
+    });
 
   });
 });
