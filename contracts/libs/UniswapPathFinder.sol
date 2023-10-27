@@ -130,7 +130,7 @@ library UniswapPathFinder {
                             foundPath.path[i], 
                             foundPath.path[i + 1],
                             foundPath.poolTypes[i],
-                            exactIn
+                            true
                         );
                 if (amounts[i + 1] == 0) {
                     return (foundPath, false);
@@ -144,7 +144,7 @@ library UniswapPathFinder {
                             foundPath.path[i - 1], 
                             foundPath.path[i],
                             foundPath.poolTypes[i - 1],
-                            exactIn
+                            false
                         );
                 if (amounts[i - 1] == type(uint256).max) {
                     return (foundPath, false);
@@ -173,7 +173,7 @@ library UniswapPathFinder {
                         foundPath.amounts[i],
                         path[i],
                         path[i + 1],
-                        exactIn
+                        true
                     );
                     if (foundPath.poolTypes[i] == IPriceFeed.PoolType.None) {
                         return (foundPath, false);
@@ -186,7 +186,7 @@ library UniswapPathFinder {
                         foundPath.amounts[i],
                         path[i - 1],
                         path[i],
-                        exactIn
+                        false
                     );
                     if (foundPath.poolTypes[i - 1] == IPriceFeed.PoolType.None) {
                         return (foundPath, false);
