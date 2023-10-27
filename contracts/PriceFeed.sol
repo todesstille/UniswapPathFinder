@@ -30,13 +30,25 @@ contract PriceFeed is IPriceFeed {
         return _pathTokens.values();
     }
 
+    function testWithPath(
+        uint256 amount,
+        address tokenIn,
+        address tokenOut,
+        bool exactIn,
+        ProvidedPath memory providedPath
+    ) external returns (IPriceFeed.FoundPath memory foundPath) {
+        return _pathTokens._getPathWithPrice(amount, tokenIn, tokenOut, exactIn, providedPath);
+    }
+
+
     function testFindPathOneHop(
         uint256 amount,
         address tokenIn,
         address tokenOut,
         bool exactIn
     ) external returns (IPriceFeed.FoundPath memory foundPath) {
-        return _pathTokens._getPathWithPrice(amount, tokenIn, tokenOut, exactIn);
+        ProvidedPath memory providedPath = ProvidedPath(new address[](0), new PoolType[](0));
+        return _pathTokens._getPathWithPrice(amount, tokenIn, tokenOut, exactIn, providedPath);
     }
 
     function testV2(
@@ -45,7 +57,7 @@ contract PriceFeed is IPriceFeed {
         address tokenOut,
         bool exactIn
     ) external view returns (uint) {
-        return amount._getSingleAmountV2(tokenIn, tokenOut, exactIn);
+        return amount._calculateSingleSwapV2(tokenIn, tokenOut, exactIn);
     }
 
     function testV3(
@@ -55,7 +67,7 @@ contract PriceFeed is IPriceFeed {
         uint24 fee,
         bool exactIn
     ) external returns (uint) {
-        return amount._getSingleAmountV3(tokenIn, tokenOut, fee, exactIn);
+        return amount._calculateSingleSwapV3(tokenIn, tokenOut, fee, exactIn);
     }
 
 }

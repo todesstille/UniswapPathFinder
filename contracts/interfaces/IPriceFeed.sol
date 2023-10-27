@@ -15,4 +15,9 @@ interface IPriceFeed {
         PoolType[] poolTypes;
         uint256[] amounts;
     }
+
+    struct ProvidedPath {
+        address[] path;
+        PoolType[] poolTypes;
+    }
 }
