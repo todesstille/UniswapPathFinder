@@ -125,20 +125,11 @@ library UniswapPathFinder {
         if (exactIn) {
             amounts[0] = amount;
             for (uint i = 0; i < len - 1; i++) {
-                amounts[i + 1] = 
-                    foundPath.poolTypes[i] == IPriceFeed.PoolType.UniswapV2 ?
-                        _calculateSingleSwapV2(
-                            amounts[i], 
-                            foundPath.path[i], 
-                            foundPath.path[i + 1], 
-                            exactIn
-                        )
-                    :
-                        _calculateSingleSwapV3(
+                amounts[i + 1] = _calculateSingleSwap(
                             amounts[i], 
                             foundPath.path[i], 
                             foundPath.path[i + 1],
-                            _feeByPoolType(foundPath.poolTypes[i]),
+                            foundPath.poolTypes[i],
                             exactIn
                         );
                 if (amounts[i + 1] == 0) {
@@ -148,20 +139,11 @@ library UniswapPathFinder {
         } else {
             amounts[len - 1] = amount;
             for (uint i = len - 1; i > 0; i--) {
-                amounts[i - 1] = 
-                    foundPath.poolTypes[i - 1] == IPriceFeed.PoolType.UniswapV2 ?
-                        _calculateSingleSwapV2(
-                            amounts[i], 
-                            foundPath.path[i - 1], 
-                            foundPath.path[i], 
-                            exactIn
-                        )
-                    :
-                        _calculateSingleSwapV3(
+                amounts[i - 1] = _calculateSingleSwap(
                             amounts[i], 
                             foundPath.path[i - 1], 
                             foundPath.path[i],
-                            _feeByPoolType(foundPath.poolTypes[i - 1]),
+                            foundPath.poolTypes[i - 1],
                             exactIn
                         );
                 if (amounts[i - 1] == type(uint256).max) {
